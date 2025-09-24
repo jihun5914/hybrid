@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>미세먼지 실시간 모니터링 대시보드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8fafc;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding: 24px 0;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: #6b7280;
+        }
+
+        .controls {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+
+        .control-group select {
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            background: white;
+            color: #374151;
+            min-width: 120px;
+        }
+
+        .control-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f3f4f6;
+            background: #fafbfc;
+        }
+
+        .card-header h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .status-item {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+            background: white;
+            transition: all 0.2s ease;
+        }
+
+        .status-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-item.good {
+            border-color: #10b981;
+            background: #f0fdfa;
+        }
+
+        .status-item.moderate {
+            border-color: #f59e0b;
+            background: #fefbf0;
+        }
+
+        .status-item.unhealthy {
+            border-color: #f97316;
+            background: #fff7ed;
+        }
+
+        .status-item.very-unhealthy {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .status-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .status-item.good .status-value {
+            color: #10b981;
+        }
+
+        .status-item.moderate .status-value {
+            color: #f59e0b;
+        }
+
+        .status-item.unhealthy .status-value {
+            color: #f97316;
+        }
+
+        .status-item.very-unhealthy .status-value {
+            color: #ef4444;
+        }
+
+        .status-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .status-grade {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .trend-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #f3f4f6;
+            border-radius: 8px;
+        }
+
+        .trend-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background-color 0.2s ease;
+        }
+
+        .trend-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .trend-item:last-child {
+            border-bottom: none;
+        }
+
+        .trend-time {
+            font-weight: 600;
+            color: #374151;
+            min-width: 60px;
+        }
+
+        .trend-values {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .trend-pm {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .trend-pm-value {
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .trend-pm-label {
+            font-size: 0.625rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+        }
+
+        .station-list {
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid #f3f4f6;
+            border-radius: 8px;
+        }
+
+        .station-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background-color 0.2s ease;
+        }
+
+        .station-item:hover {
+            background-color: #f9fafb;
+        }
+
+        .station-item:last-child {
+            border-bottom: none;
+        }
+
+        .station-name {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .station-values {
+            display: flex;
+            gap: 8px;
+        }
+
+        .station-pm {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+        }
+
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .recommendation-item {
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            background: #f8fafc;
+        }
+
+        .recommendation-item h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .recommendation-item p {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+            text-align: center;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.875rem;
+            }
+            
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .control-group > * {
+                width: 100%;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .trend-values {
+                gap: 8px;
+            }
+
+            .station-values {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+
+        /* 스크롤바 스타일링 */
+        .trend-list::-webkit-scrollbar,
+        .station-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .trend-list::-webkit-scrollbar-track,
+        .station-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        .trend-list::-webkit-scrollbar-thumb,
+        .station-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .trend-list::-webkit-scrollbar-thumb:hover,
+        .station-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>미세먼지 실시간 모니터링</h1>
+            <p>전국 대기오염 정보를 실시간으로 확인하세요</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="regionSelect">지역 선택</label>
+                <select id="regionSelect">
+                    <option value="서울">서울특별시</option>
+                    <option value="부산">부산광역시</option>
+                    <option value="대구">대구광역시</option>
+                    <option value="인천">인천광역시</option>
+                    <option value="광주">광주광역시</option>
+                    <option value="대전">대전광역시</option>
+                    <option value="울산">울산광역시</option>
+                    <option value="경기">경기도</option>
+                    <option value="강원">강원도</option>
+                    <option value="충북">충청북도</option>
+                    <option value="충남">충청남도</option>
+                    <option value="전북">전라북도</option>
+                    <option value="전남">전라남도</option>
+                    <option value="경북">경상북도</option>
+                    <option value="경남">경상남도</option>
+                    <option value="제주">제주특별자치도</option>
+                </select>
+                <button class="btn btn-primary" onclick="loadAirQualityData()">데이터 조회</button>
+                <button class="btn btn-secondary" onclick="loadSampleData()">샘플 데이터</button>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="main-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📊 현재 대기질 현황</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="currentStatus">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                데이터를 불러오는 중...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📈 시간별 변화 추이</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="trendChart">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                추이 데이터 로딩 중...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🏢 측정소별 현황</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="stationList">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                측정소 데이터 로딩 중...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>💡 건강 권장사항</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="recommendations">
+                            <div class="recommendations-grid">
+                                <div class="recommendation-item">
+                                    <h4>🏃‍♂️ 야외활동</h4>
+                                    <p>대기질 확인 후 권장사항을 제공합니다</p>
+                                </div>
+                                <div class="recommendation-item">
+                                    <h4>😷 마스크 착용</h4>
+                                    <p>미세먼지 농도에 따른 마스크 가이드</p>
+                                </div>
+                                <div class="recommendation-item">
+                                    <h4>🏠 환기 관리</h4>
+                                    <p>실내 공기질 관리 팁을 제공합니다</p>
+                                </div>
+                                <div class="recommendation-item">
+                                    <h4>👶 민감군 주의</h4>
+                                    <p>어린이, 노인 등 주의사항을 안내합니다</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 대기질 등급 분류 함수
+        function getAirQualityGrade(pm10, pm25) {
+            if (pm10 <= 30 && pm25 <= 15) return { grade: '좋음', class: 'good', color: '#10b981' };
+            if (pm10 <= 80 && pm25 <= 35) return { grade: '보통', class: 'moderate', color: '#f59e0b' };
+            if (pm10 <= 150 && pm25 <= 75) return { grade: '나쁨', class: 'unhealthy', color: '#f97316' };
+            return { grade: '매우나쁨', class: 'very-unhealthy', color: '#ef4444' };
+        }
+
+        // 샘플 데이터 생성
+        function generateSampleData() {
+            const stations = ['종로구', '중구', '용산구', '성동구', '광진구', '동대문구', '중랑구', '성북구', '강북구', '도봉구'];
+            return stations.map(station => ({
+                stationName: station,
+                pm10Value: Math.floor(Math.random() * 120) + 10,
+                pm25Value: Math.floor(Math.random() * 70) + 5,
+                o3Value: (Math.random() * 0.1 + 0.01).toFixed(3),
+                no2Value: (Math.random() * 0.05 + 0.005).toFixed(3),
+                coValue: (Math.random() * 1 + 0.1).toFixed(1),
+                so2Value: (Math.random() * 0.01 + 0.001).toFixed(3),
+                dataTime: new Date().toLocaleString('ko-KR')
+            }));
+        }
+
+        // 시간별 추이 데이터 생성
+        function generateTrendData() {
+            const trendData = [];
+            for (let i = 23; i >= 0; i--) {
+                const time = new Date();
+                time.setHours(time.getHours() - i);
+                trendData.push({
+                    time: time.getHours() + '시',
+                    pm10: Math.floor(Math.random() * 100) + 20,
+                    pm25: Math.floor(Math.random() * 60) + 10
+                });
+            }
+            return trendData;
+        }
+
+        // 현재 상태 표시
+        function displayCurrentStatus(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('currentStatus').innerHTML = 
+                    '<div class="error-message">데이터를 불러올 수 없습니다.</div>';
+                return;
+            }
+
+            // 평균값 계산
+            const avgPM10 = Math.round(data.reduce((sum, item) => sum + item.pm10Value, 0) / data.length);
+            const avgPM25 = Math.round(data.reduce((sum, item) => sum + item.pm25Value, 0) / data.length);
+            const avgO3 = (data.reduce((sum, item) => sum + parseFloat(item.o3Value), 0) / data.length).toFixed(3);
+            const avgNO2 = (data.reduce((sum, item) => sum + parseFloat(item.no2Value), 0) / data.length).toFixed(3);
+
+            const pm10Grade = getAirQualityGrade(avgPM10, avgPM25);
+            const pm25Grade = getAirQualityGrade(avgPM10, avgPM25);
+
+            document.getElementById('currentStatus').innerHTML = `
+                <div class="status-grid">
+                    <div class="status-item ${pm10Grade.class}">
+                        <div class="status-value">${avgPM10}</div>
+                        <div class="status-label">미세먼지 (㎍/㎥)</div>
+                        <div class="status-grade">${pm10Grade.grade}</div>
+                    </div>
+                    <div class="status-item ${pm25Grade.class}">
+                        <div class="status-value">${avgPM25}</div>
+                        <div class="status-label">초미세먼지 (㎍/㎥)</div>
+                        <div class="status-grade">${pm25Grade.grade}</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${avgO3}</div>
+                        <div class="status-label">오존 (ppm)</div>
+                        <div class="status-grade">-</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-value">${avgNO2}</div>
+                        <div class="status-label">이산화질소 (ppm)</div>
+                        <div class="status-grade">-</div>
+                    </div>
+                </div>
+            `;
+
+            // 권장사항 업데이트
+            updateRecommendations(avgPM10, avgPM25);
+        }
+
+        // 시간별 추이 표시 (스크롤 리스트)
+        function displayTrendChart() {
+            const trendData = generateTrendData();
+            
+            const trendHTML = trendData.map(item => {
+                const pm10Grade = getAirQualityGrade(item.pm10, item.pm25);
+                const pm25Grade = getAirQualityGrade(item.pm10, item.pm25);
+                
+                return `
+                    <div class="trend-item">
+                        <div class="trend-time">${item.time}</div>
+                        <div class="trend-values">
+                            <div class="trend-pm">
+                                <div class="trend-pm-value" style="color: ${pm10Grade.color}">${item.pm10}</div>
+                                <div class="trend-pm-label">PM10</div>
+                            </div>
+                            <div class="trend-pm">
+                                <div class="trend-pm-value" style="color: ${pm25Grade.color}">${item.pm25}</div>
+                                <div class="trend-pm-label">PM2.5</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('trendChart').innerHTML = `<div class="trend-list">${trendHTML}</div>`;
+        }
+
+        // 측정소 목록 표시
+        function displayStationList(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('stationList').innerHTML = 
+                    '<div class="error-message">측정소 데이터를 불러올 수 없습니다.</div>';
+                return;
+            }
+
+            const stationHTML = data.map(station => {
+                const pm10Grade = getAirQualityGrade(station.pm10Value, station.pm25Value);
+                const pm25Grade = getAirQualityGrade(station.pm10Value, station.pm25Value);
+                
+                return `
+                    <div class="station-item">
+                        <div class="station-name">${station.stationName}</div>
+                        <div class="station-values">
+                            <div class="station-pm" style="background: ${pm10Grade.color}">
+                                PM10: ${station.pm10Value}
+                            </div>
+                            <div class="station-pm" style="background: ${pm25Grade.color}">
+                                PM2.5: ${station.pm25Value}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('stationList').innerHTML = `<div class="station-list">${stationHTML}</div>`;
+        }
+
+        // 건강 권장사항 업데이트
+        function updateRecommendations(avgPM10, avgPM25) {
+            const grade = getAirQualityGrade(avgPM10, avgPM25);
+            let recommendations = {};
+
+            switch(grade.class) {
+                case 'good':
+                    recommendations = {
+                        outdoor: '야외활동에 적합합니다. 자유롭게 활동하세요.',
+                        mask: '마스크 착용이 필요하지 않습니다.',
+                        ventilation: '창문을 열어 자주 환기하세요.',
+                        sensitive: '모든 연령대가 활동하기 좋은 날씨입니다.'
+                    };
+                    break;
+                case 'moderate':
+                    recommendations = {
+                        outdoor: '야외활동이 가능하나 장시간은 피하세요.',
+                        mask: '민감한 분은 보건용 마스크 착용을 권합니다.',
+                        ventilation: '짧은 시간 환기하고 공기청정기를 사용하세요.',
+                        sensitive: '민감군은 야외활동 시간을 줄이세요.'
+                    };
+                    break;
+                case 'unhealthy':
+                    recommendations = {
+                        outdoor: '야외활동을 자제하고 실내 활동을 권장합니다.',
+                        mask: 'KF80 이상 보건용 마스크 착용이 필수입니다.',
+                        ventilation: '창문을 닫고 공기청정기를 가동하세요.',
+                        sensitive: '민감군은 실외활동을 금지하세요.'
+                    };
+                    break;
+                default:
+                    recommendations = {
+                        outdoor: '야외활동을 금지하고 실내에 머물러 주세요.',
+                        mask: 'KF94 보건용 마스크 착용이 필수입니다.',
+                        ventilation: '문과 창문을 모두 닫고 공기청정기를 강하게 가동하세요.',
+                        sensitive: '모든 연령대가 외출을 자제해야 합니다.'
+                    };
+            }
+
+            document.getElementById('recommendations').innerHTML = `
+                <div class="recommendations-grid">
+                    <div class="recommendation-item">
+                        <h4>🏃‍♂️ 야외활동</h4>
+                        <p>${recommendations.outdoor}</p>
+                    </div>
+                    <div class="recommendation-item">
+                        <h4>😷 마스크 착용</h4>
+                        <p>${recommendations.mask}</p>
+                    </div>
+                    <div class="recommendation-item">
+                        <h4>🏠 환기 관리</h4>
+                        <p>${recommendations.ventilation}</p>
+                    </div>
+                    <div class="recommendation-item">
+                        <h4>👶 민감군 주의</h4>
+                        <p>${recommendations.sensitive}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 실제 API 데이터 로드
+        async function loadAirQualityData() {
+            const region = document.getElementById('regionSelect').value;
+            
+            // 실제 API 호출을 위한 알림
+            alert(`${region} 지역의 실제 API 데이터를 호출합니다.\n(CORS 정책으로 인해 샘플 데이터로 대체됩니다)`);
+            loadSampleData();
+        }
+
+        // 샘플 데이터 로드
+        function loadSampleData() {
+            const sampleData = generateSampleData();
+            displayCurrentStatus(sampleData);
+            displayStationList(sampleData);
+            displayTrendChart();
+        }
+
+        // 페이지 로드 시 샘플 데이터 자동 로드
+        window.onload = function() {
+            setTimeout(() => {
+                loadSampleData();
+            }, 1000);
+        };
+
+        // 자동 새로고침 (5분마다)
+        setInterval(() => {
+            loadSampleData();
+        }, 300000);
+    </script>
+</body>
+</html>
