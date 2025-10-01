@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVIDIA 소개 앱</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --nvidia-green: #76b900;
+            --nvidia-dark: #1a1a1a;
+            --nvidia-gray: #2d2d2d;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--nvidia-dark) 0%, var(--nvidia-gray) 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .navbar {
+            background: var(--nvidia-dark) !important;
+            border-bottom: 3px solid var(--nvidia-green);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--nvidia-green) !important;
+            font-size: 1.5rem;
+        }
+        
+        .hero-section {
+            padding: 60px 20px;
+            text-align: center;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%231a1a1a" width="1200" height="600"/><g fill="%2376b900" opacity="0.1"><circle cx="200" cy="150" r="100"/><circle cx="800" cy="400" r="150"/><circle cx="1000" cy="200" r="80"/></g></svg>');
+            background-size: cover;
+            border-radius: 15px;
+            margin: 20px;
+        }
+        
+        .hero-section h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--nvidia-green);
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+        }
+        
+        .card {
+            background: rgba(45, 45, 45, 0.9);
+            border: 1px solid var(--nvidia-green);
+            border-radius: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            color: #fff;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(118, 185, 0, 0.3);
+        }
+        
+        .card:active {
+            transform: translateY(-3px);
+        }
+        
+        .btn-nvidia {
+            background: var(--nvidia-green);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-nvidia:hover {
+            background: #5a9100;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(118, 185, 0, 0.4);
+            color: #fff;
+        }
+        
+        .btn-youtube {
+            background: #FF0000;
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        
+        .btn-youtube:hover {
+            background: #CC0000;
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 0, 0, 0.4);
+            color: #fff;
+        }
+        
+        .accordion-button {
+            background: var(--nvidia-gray);
+            color: #fff;
+            border: 1px solid var(--nvidia-green);
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background: var(--nvidia-green);
+            color: #fff;
+        }
+        
+        .accordion-body {
+            background: rgba(45, 45, 45, 0.95);
+            color: #fff;
+        }
+        
+        .gallery-item-wrapper {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            border: 2px solid var(--nvidia-green);
+            height: 200px;
+            background: var(--nvidia-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .gallery-item {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        
+        .gallery-item-wrapper:hover .gallery-item {
+            transform: scale(1.05);
+        }
+        
+        .gallery-item.error {
+            display: none;
+        }
+        
+        .gallery-placeholder {
+            display: none;
+            text-align: center;
+            color: var(--nvidia-green);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .gallery-item.error + .gallery-placeholder {
+            display: flex;
+        }
+        
+        footer {
+            background: var(--nvidia-dark);
+            padding: 20px;
+            text-align: center;
+            border-top: 3px solid var(--nvidia-green);
+            margin-top: 40px;
+        }
+        
+        .video-card {
+            background: rgba(45, 45, 45, 0.95);
+            border: 2px solid var(--nvidia-green);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .video-thumbnail {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+        }
+        
+        .video-thumbnail img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .video-thumbnail:hover .play-overlay {
+            background: rgba(118, 185, 0, 0.9);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        
+        .page-section {
+            display: none;
+        }
+        
+        .page-section.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                -webkit-tap-highlight-color: rgba(118, 185, 0, 0.3);
+            }
+            
+            .btn-youtube {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#" onclick="showPage('home'); return false;">
+                <i class="bi bi-gpu-card"></i> NVIDIA
+            </a>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <div id="home" class="page-section active">
+        <div class="hero-section">
+            <h1><i class="bi bi-nvidia"></i> NVIDIA</h1>
+            <p class="lead">AI Computing의 선두주자</p>
+            <p>The Way It's Meant To Be Played</p>
+        </div>
+        
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 text-center p-4" onclick="showPage('intro')">
+                        <i class="bi bi-building display-3 text-success mb-3"></i>
+                        <h5>회사 소개</h5>
+                        <p>NVIDIA의 역사와 비전</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 text-center p-4" onclick="showPage('products')">
+                        <i class="bi bi-cpu display-3 text-success mb-3"></i>
+                        <h5>주요 제품</h5>
+                        <p>GeForce, AI, Data Center</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 text-center p-4" onclick="showPage('video')">
+                        <i class="bi bi-play-circle display-3 text-success mb-3"></i>
+                        <h5>홍보 영상</h5>
+                        <p>NVIDIA 소개 동영상</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 text-center p-4" onclick="showPage('gallery')">
+                        <i class="bi bi-images display-3 text-success mb-3"></i>
+                        <h5>갤러리</h5>
+                        <p>제품 및 기술 사진</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Intro Page -->
+    <div id="intro" class="page-section">
+        <div class="container mt-4">
+            <button class="btn btn-nvidia mb-4" onclick="showPage('home')">
+                <i class="bi bi-arrow-left"></i> 홈으로
+            </button>
+            
+            <h2 class="text-center mb-4" style="color: var(--nvidia-green);">NVIDIA 회사 소개</h2>
+            
+            <div class="accordion" id="companyAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#history">
+                            <i class="bi bi-clock-history me-2"></i> 회사 연혁
+                        </button>
+                    </h2>
+                    <div id="history" class="accordion-collapse collapse show" data-bs-parent="#companyAccordion">
+                        <div class="accordion-body">
+                            <p><strong>1993년:</strong> 젠슨 황(Jensen Huang), 크리스 말라초스키, 커티스 프리엠이 NVIDIA 설립</p>
+                            <p><strong>1999년:</strong> 세계 최초의 GPU인 GeForce 256 출시</p>
+                            <p><strong>2006년:</strong> CUDA 플랫폼 발표로 병렬 컴퓨팅 혁명 시작</p>
+                            <p><strong>2012년:</strong> 딥러닝 혁명의 중심에 서며 AI 시대 개막</p>
+                            <p><strong>2020년대:</strong> AI, 데이터센터, 자율주행 분야의 글로벌 리더로 성장</p>
+                            <p><strong>2024년:</strong> 시가총액 1조 달러 돌파, 세계 최고의 AI 칩 기업</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mission">
+                            <i class="bi bi-bullseye me-2"></i> 비전과 미션
+                        </button>
+                    </h2>
+                    <div id="mission" class="accordion-collapse collapse" data-bs-parent="#companyAccordion">
+                        <div class="accordion-body">
+                            <h5>비전</h5>
+                            <p>AI Computing의 미래를 선도하며, 모든 산업에 AI를 민주화합니다.</p>
+                            <h5>미션</h5>
+                            <p>그래픽과 컴퓨팅 기술의 한계를 뛰어넘어 세상을 변화시킵니다. 게이밍, 전문가 시각화, 데이터센터, 자동차 등 다양한 시장에서 혁신을 주도합니다.</p>
+                            <h5>핵심 가치</h5>
+                            <ul>
+                                <li>혁신 (Innovation First)</li>
+                                <li>지적 정직성 (Intellectual Honesty)</li>
+                                <li>속도 (Speed and Agility)</li>
+                                <li>탁월성 (Excellence)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#achievements">
+                            <i class="bi bi-trophy me-2"></i> 주요 성과
+                        </button>
+                    </h2>
+                    <div id="achievements" class="accordion-collapse collapse" data-bs-parent="#companyAccordion">
+                        <div class="accordion-body">
+                            <p><i class="bi bi-check-circle text-success"></i> GPU 시장 점유율 80% 이상</p>
+                            <p><i class="bi bi-check-circle text-success"></i> AI 학습용 칩 시장 점유율 95% 이상</p>
+                            <p><i class="bi bi-check-circle text-success"></i> Fortune 500대 기업 중 Top 10 진입</p>
+                            <p><i class="bi bi-check-circle text-success"></i> ChatGPT, Midjourney 등 주요 AI 서비스의 핵심 인프라</p>
+                            <p><i class="bi bi-check-circle text-success"></i> 전 세계 슈퍼컴퓨터 Top 10 중 8개가 NVIDIA GPU 탑재</p>
+                            <p><i class="bi bi-check-circle text-success"></i> 자율주행차량 분야 파트너십: 테슬라, 메르세데스-벤츠, 볼보 등</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Page -->
+    <div id="products" class="page-section">
+        <div class="container mt-4">
+            <button class="btn btn-nvidia mb-4" onclick="showPage('home')">
+                <i class="bi bi-arrow-left"></i> 홈으로
+            </button>
+            
+            <h2 class="text-center mb-4" style="color: var(--nvidia-green);">주요 제품 라인업</h2>
+            
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card p-4">
+                        <h4><i class="bi bi-controller"></i> GeForce RTX 시리즈</h4>
+                        <p class="text-muted">게이밍 그래픽카드</p>
+                        <ul>
+                            <li>RTX 4090: 최고 성능의 플래그십</li>
+                            <li>RTX 4080: 4K 게이밍의 완성</li>
+                            <li>RTX 4070: 가성비 최강</li>
+                            <li>DLSS 3.0 기술 탑재</li>
+                            <li>레이 트레이싱 실시간 지원</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card p-4">
+                        <h4><i class="bi bi-robot"></i> AI & Data Center</h4>
+                        <p class="text-muted">AI 컴퓨팅 솔루션</p>
+                        <ul>
+                            <li>H100: AI 학습의 표준</li>
+                            <li>A100: 범용 AI 가속기</li>
+                            <li>DGX Systems: 완전한 AI 슈퍼컴퓨터</li>
+                            <li>CUDA & cuDNN: AI 개발 플랫폼</li>
+                            <li>NVLink: 초고속 GPU 간 연결</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card p-4">
+                        <h4><i class="bi bi-palette"></i> Professional Visualization</h4>
+                        <p class="text-muted">전문가용 워크스테이션</p>
+                        <ul>
+                            <li>RTX 6000 Ada: 최고급 워크스테이션</li>
+                            <li>Omniverse: 3D 협업 플랫폼</li>
+                            <li>Studio Driver: 크리에이터 최적화</li>
+                            <li>영화, 건축, 디자인 산업 표준</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card p-4">
+                        <h4><i class="bi bi-car-front"></i> Automotive</h4>
+                        <p class="text-muted">자율주행 플랫폼</p>
+                        <ul>
+                            <li>DRIVE AGX: 자율주행 컴퓨팅</li>
+                            <li>DRIVE Hyperion: 완전한 센서 아키텍처</li>
+                            <li>DRIVE Sim: 가상 시뮬레이션</li>
+                            <li>테슬라, 메르세데스-벤츠 파트너십</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4 p-4">
+                <h4 class="text-center mb-3">기술 혁신</h4>
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="bi bi-lightning-charge display-4 text-success"></i>
+                        <h5>CUDA Technology</h5>
+                        <p>병렬 컴퓨팅의 혁명</p>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="bi bi-eye display-4 text-success"></i>
+                        <h5>Ray Tracing</h5>
+                        <p>실시간 광선 추적</p>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="bi bi-bezier2 display-4 text-success"></i>
+                        <h5>AI Tensor Cores</h5>
+                        <p>AI 전용 연산 코어</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Page -->
+    <div id="video" class="page-section">
+        <div class="container mt-4">
+            <button class="btn btn-nvidia mb-4" onclick="showPage('home')">
+                <i class="bi bi-arrow-left"></i> 홈으로
+            </button>
+            
+            <h2 class="text-center mb-4" style="color: var(--nvidia-green);">NVIDIA 홍보 영상</h2>
+            
+            <div class="video-card">
+                <h3 class="mb-3"><i class="bi bi-youtube text-danger"></i> NVIDIA CEO Jensen Huang GTC Keynote</h3>
+                <p class="text-muted mb-4">NVIDIA의 비전과 최신 기술을 소개하는 CEO 젠슨 황의 기조연설</p>
+                
+                <div class="video-thumbnail" onclick="window.open('https://www.youtube.com/watch?v=DiGB5uAYKAg', '_blank')">
+                    <img src="https://img.youtube.com/vi/DiGB5uAYKAg/maxresdefault.jpg" alt="NVIDIA GTC Keynote">
+                    <div class="play-overlay">
+                        <i class="bi bi-play-fill text-white" style="font-size: 40px;"></i>
+                    </div>
+                </div>
+                
+                <a href="https://www.youtube.com/watch?v=DiGB5uAYKAg" target="_blank" class="btn-youtube">
+                    <i class="bi bi-youtube"></i>
+                    YouTube에서 보기
+                </a>
+                
+                <div class="mt-4">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle"></i> 
+                        이 버튼을 클릭하면 YouTube에서 영상을 시청할 수 있습니다
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery Page -->
+    <div id="gallery" class="page-section">
+        <div class="container mt-4">
+            <button class="btn btn-nvidia mb-4" onclick="showPage('home')">
+                <i class="bi bi-arrow-left"></i> 홈으로
+            </button>
+            
+            <h2 class="text-center mb-4" style="color: var(--nvidia-green);">NVIDIA 갤러리</h2>
+            
+            <div class="row g-3">
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="gallery-item-wrapper">
+                        <img src="https://images.unsplash.com/photo-1591488320449-011701bb6704?w=400&q=80" alt="RTX 4090" class="gallery-item" loading="lazy">
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-gpu-card display-4 mb-2"></i>
+                            <small>RTX 4090</small>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 small">RTX 4090</p>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="gallery-item-wrapper">
+                        <img src="https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=400&q=80" alt="게이밍 셋업" class="gallery-item" loading="lazy">
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-controller display-4 mb-2"></i>
+                            <small>게이밍 셋업</small>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 small">게이밍 셋업</p>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="gallery-item-wrapper">
+                        <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&q=80" alt="AI 데이터센터" class="gallery-item" loading="lazy">
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-server display-4 mb-2"></i>
+                            <small>AI 데이터센터</small>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 small">AI 데이터센터</p>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="gallery-item-wrapper">
+                        <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&q=80" alt="칩셋 기술" class="gallery-item" loading="lazy">
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-cpu display-4 mb-2"></i>
+                            <small>칩셋 기술</small>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 small">칩셋 기술</p>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="gallery-item-wrapper">
+                        <img src="https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=400&q=80" alt="자율주행 차량" class="gallery-item" loading="lazy">
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-car-front display-4 mb-2"></i>
+                            <small>자율주행 차량</small>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 small">자율주행 차량</p>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="gallery-item-wrapper">
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&q=80" alt="데이터 분석" class="gallery-item" loading="lazy">
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-graph-up display-4 mb-2"></i>
+                            <small>데이터 분석</small>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 small">데이터 분석</p>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="gallery-item-wrapper">
+                        <img src="https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?w=400&q=80" alt="VR 기술" class="gallery-item" loading="lazy">
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-headset-vr display-4 mb-2"></i>
+                            <small>VR 기술</small>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 small">VR 기술</p>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="gallery-item-wrapper">
+                        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80" alt="혁신 기술" class="gallery-item" loading="lazy">
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-lightbulb display-4 mb-2"></i>
+                            <small>혁신 기술</small>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 small">혁신 기술</p>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="gallery-item-wrapper">
+                        <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&q=80" alt="회로 설계" class="gallery-item" loading="lazy">
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-diagram-3 display-4 mb-2"></i>
+                            <small>회로 설계</small>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 small">회로 설계</p>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="gallery-item-wrapper">
+                        <img src="https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=400&q=80" alt="서버 룸" class="gallery-item" loading="lazy">
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-hdd-rack display-4 mb-2"></i>
+                            <small>서버 룸</small>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 small">서버 룸</p>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="gallery-item-wrapper">
+                        <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&q=80" alt="CUDA 개발" class="gallery-item" loading="lazy">
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-code-slash display-4 mb-2"></i>
+                            <small>CUDA 개발</small>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 small">CUDA 개발</p>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="gallery-item-wrapper">
+                        <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&q=80" alt="미래 기술" class="gallery-item" loading="lazy">
+                        <div class="gallery-placeholder">
+                            <i class="bi bi-rocket-takeoff display-4 mb-2"></i>
+                            <small>미래 기술</small>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 small">미래 기술</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <h5 style="color: var(--nvidia-green);">NVIDIA Corporation</h5>
+        <p>Santa Clara, California | www.nvidia.com</p>
+        <p class="small">© 2024 NVIDIA Corporation. All rights reserved.</p>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page-section');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            const selectedPage = document.getElementById(pageId);
+            if (selectedPage) {
+                selectedPage.classList.add('active');
+                window.scrollTo(0, 0);
+            }
+        }
+        
+        // 이미지 로드 에러 처리
+        document.addEventListener('DOMContentLoaded', function() {
+            const galleryImages = document.querySelectorAll('.gallery-item');
+            
+            galleryImages.forEach(img => {
+                img.onerror = function() {
+                    this.classList.add('error');
+                };
+                
+                img.onload = function() {
+                    this.classList.remove('error');
+                };
+            });
+        });
+    </script>
+</body>
+</html>
